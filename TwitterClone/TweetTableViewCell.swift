@@ -31,14 +31,12 @@ class TweetTableViewCell: UITableViewCell {
         imageView.layer.cornerRadius = 25
         imageView.layer.masksToBounds = true
         imageView.clipsToBounds = true
-        imageView.image = UIImage(systemName: "person")
         imageView.backgroundColor = .systemPink
         return imageView
     }()
     
     private let displayNameLabel: UILabel = {
         let label = UILabel()
-        label.text = "Changwon Kim"
         label.font = .systemFont(ofSize: 18, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -46,7 +44,6 @@ class TweetTableViewCell: UITableViewCell {
     
     private let userNameLabel: UILabel = {
         let label = UILabel()
-        label.text = "@window1"
         label.textColor = .secondaryLabel
         label.font = .systemFont(ofSize: 16, weight: .regular)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -56,7 +53,6 @@ class TweetTableViewCell: UITableViewCell {
     private let tweetTextContentLabel: UILabel = {
        let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "테스트 중입니다. 이건 다중 라인을 어떻게 설정할 수 있는지 해보려고 하는데 나는 더 충분한 양의 정보가 필요합니다. 취업해야 하는데 고민입니다. 일단 뭐가되었던 열심히 해봅시다.!!!!"
         label.numberOfLines = 0
         return label
     }()
@@ -143,6 +139,15 @@ class TweetTableViewCell: UITableViewCell {
         likeButton.addTarget(self, action: #selector(didTapLike), for: .touchUpInside)
         shareButton.addTarget(self, action: #selector(didTapShare), for: .touchUpInside)
         viewsButton.addTarget(self, action: #selector(didTapViews), for: .touchUpInside)
+    }
+    
+    func configureTweet(displayName: String, username: String, tweetTextContext: String, avatarPath: String) {
+        displayNameLabel.text = displayName
+        userNameLabel.text  = "@\(username)"
+        tweetTextContentLabel.text = tweetTextContext
+        avatarImageView.sd_setImage(with: URL(string: avatarPath))
+        
+        
     }
     
     //MARK: - Constraints

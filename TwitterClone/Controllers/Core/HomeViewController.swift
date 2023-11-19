@@ -28,6 +28,15 @@ class HomeViewController: UIViewController {
         return button
     }()
     
+    lazy var activityIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView()
+        indicator.center = self.splitViewController?.view.center ?? CGPoint()
+        indicator.style = UIActivityIndicatorView.Style.medium
+        indicator.startAnimating()
+        return indicator
+    }()
+    
+    
     
     private func configureNavigationBar() {
         let size = 36
@@ -57,6 +66,8 @@ class HomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        timelineTableView.tableHeaderView = activityIndicator
+        
         view.addSubview(timelineTableView)
         view.addSubview(composeTweetButton)
         timelineTableView.delegate = self
@@ -65,6 +76,8 @@ class HomeViewController: UIViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "rectangle.portrait.and.arrow.right"), style: .plain, target: self, action: #selector(didTapSignOut))
         bindViews()
     }
+
+    
     @objc private func didTapSignOut() {
         try? Auth.auth().signOut()
         handleAuthentication()
@@ -113,6 +126,13 @@ class HomeViewController: UIViewController {
             }
         }
         .store(in: &subscriptions)
+        
+        viewModel.$tweets.sink { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.timelineTableView.reloadData()
+            }
+        }
+        .store(in: &subscriptions)
     }
     
     private func consfigureConstraints() {
@@ -128,14 +148,29 @@ class HomeViewController: UIViewController {
 
 extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
+        return viewModel.tweets.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: TweetTableViewCell.identifer, for: indexPath) as? TweetTableViewCell else { return UITableViewCell() }
+        let tweetModel = viewModel.tweets[indexPath.row]
+        cell.configureTweet(displayName: tweetModel.author.userName, username: tweetModel.author.userName, tweetTextContext: tweetModel.tweetContent, avatarPath: tweetModel.author.avatarPath)
         cell.delegate = self
         return cell
     }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row == 0 {
+            self.timelineTableView.tableHeaderView?.isHidden = false
+        }
+    }
+    func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row == 0 {
+            self.timelineTableView.tableHeaderView?.isHidden = true
+        }
+    }
+    
+    
 }
 
 extension HomeViewController: TweetTableViewCellDelegate {
